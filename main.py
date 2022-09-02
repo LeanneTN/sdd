@@ -11,7 +11,7 @@ parser.add_argument('--model', type=str, required=True, help='select a model to 
 main_args = parser.parse_args()
 
 if torch.cuda.is_available():
-    log("cuda available, using gpu")
+    #log("cuda available, using gpu")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 dataset_path = 'dataset/csv/original/clean.csv'
 

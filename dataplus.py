@@ -9,6 +9,8 @@ from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import TomekLinks
 from util.feature_processor import select_features
 import random
+#glob用于查找文件目录
+import glob
 
 
 def arff_to_csv(arff_path, csv_path) -> None:
@@ -127,4 +129,27 @@ def data_pro_unbalance(datapath, bath_size, shuffle: bool = True, val_rate:float
     # dataloader,bath_size：每个batch加载多少个样本，drop_last设置是否删除最后一个不完整的batch
     return DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle), DataLoader(val_dataset,batch_size=batch_size), DataLoader(test_dataset, batch_size=batch_size), input_dim
 
+
+def csv_merge(file_reg: str, merge_path: str) -> None:
+    """
+    csv文件合并
+
+    :param file_reg: csv文件路径的正则匹配
+    :param merge_path: 合并之后的csv文件路径
+    :return: None
+    """
+    data_frame = pd.DataFrame()
+    index = 0
+    for file in glob.glob(file_reg):
+        data = pd.read_csv(file)
+        #对csv文件逐个合并
+        data_frame = pd.concat([data_frame, data], ignore_index=True)
+        #对已经完成合并的文件打印信息
+        print(file + ' finished')
+        print('%d rows, %d columns' % (data.shape[0], data.shape[1]))
+        index += 1
+    #打印总行数
+    print('%d rows total' % data_frame.shape[0])
+    #将DataFrame写入提供路径下的csv文件中，且不需要添加索引
+    data_frame.to_csv(merge_path, index=False)
 

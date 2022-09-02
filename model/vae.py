@@ -1,38 +1,180 @@
+from typing import List
+
 import torch
-from torch.nn import Module, Sequential, Linear, BatchNorm1d
+from torch.nn import Module, Sequential, Linear, BatchNorm2d, LeakyReLU, Conv2d, ConvTranspose2d, Tanh, functional
+from torch import tensor as Tensor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class VAE(Module):
 
-    def __init__(self, input_dim: int, abnormal_rate: float):
+    def __init__(self,
+                 in_channels: int,
+                 latent_dim: int,
+                 hidden_dims: List = None,
+                 beta: int = 4,
+                 gamma: float = 1000.,
+                 max_capacity: int = 25,
+                 capacity_max_iter: int = 1e5,
+                 loss_type: str = 'B',
+                 **kwargs):
         super(VAE, self).__init__()  # module's init function
-        hidden_dim = max(input_dim // 2, 16)
-        z_dim = max(input_dim // 4, 8)
-        self.norm = BatchNorm1d(input_dim)
-        self.abnormal_rate = abnormal_rate
-        # 编码器
-        self.encoder = Sequential(
-            Linear(input_dim, hidden_dim),
-            Swish(),
-            Linear(hidden_dim, z_dim),
-            Swish()
+
+        self.latent_dim = latent_dim
+        self.beta = beta
+        self.gamma = gamma
+        self.loss_type = loss_type
+        self.C_max = torch.Tensor([max_capacity])
+        self.C_stop_iter = capacity_max_iter
+
+        # todo: 重设hidden_dims
+        modules = []
+        if hidden_dims is None:
+            hidden_dims = [32, 64, 128, 256, 512]
+
+        # encoder
+        for h_dim in hidden_dims:
+            modules.append(
+                Sequential(
+                    Conv2d(in_channels, out_channels=h_dim,
+                           kernel_size=3, stride=2, padding=1),
+                    BatchNorm2d(h_dim),
+                    LeakyReLU())
+            )
+            in_channels = h_dim
+
+        self.encoder = Sequential(*modules)
+        # todo:if hidden dims' multi 4 is necessary
+        self.mu = Linear(hidden_dims[-1]*4, latent_dim)
+        self.var = Linear(hidden_dims[-1]*4, latent_dim)
+
+        # decoder
+        modules = []
+
+        self.decoder_input = Linear(latent_dim, hidden_dims[-1]*4)
+
+        # 将层数反转来构建解码器
+        hidden_dims.reverse()
+
+        for i in range(len(hidden_dims) - 1):
+            modules.append(
+                Sequential(
+                    ConvTranspose2d(hidden_dims[i],
+                                    hidden_dims[i+1],
+                                    kernel_size=3,
+                                    stride=2,
+                                    padding=1,
+                                    output_padding=1),
+                    BatchNorm2d(hidden_dims[i + 1]),
+                    LeakyReLU()
+                )
+            )
+
+        self.decoder = Sequential(*modules)
+
+        self.final_layer = Sequential(
+            ConvTranspose2d(hidden_dims[-1],
+                            hidden_dims[-1],
+                            kernel_size=3,
+                            stride=2,
+                            padding=1,
+                            output_padding=1),
+            BatchNorm2d(hidden_dims[-1]),
+            LeakyReLU(),
+            Conv2d(hidden_dims[-1],
+                   out_channels=3,
+                   kernel_size=3,
+                   padding=1),
+            Tanh()
         )
 
-        # 隐变量计算的全连接层
-        self.project_m = Linear(z_dim, z_dim)
-        self.project_lv = Linear(z_dim, z_dim)
+    def encode(self, input: Tensor) -> List[Tensor]:
+        """
+        Encodes the input by passing through the encoder network
+        and returns the latent codes.
+        :param input: (Tensor) Input tensor to encoder [N x C x H x W]
+        :return: (Tensor) List of latent codes
+        """
+        result = self.encoder(input)
+        result = torch.flatten(result, start_dim=1)
 
-        # 解码器
-        self.decoder = Sequential(
-            Linear(z_dim, z_dim),
-            Swish(),
-            Linear(z_dim, hidden_dim),
-            Swish(),
-            Linear(hidden_dim, input_dim),
-            BatchNorm1d(input_dim)
-        )
+        # Split the result into mu and var components
+        # of the latent Gaussian distribution
+        mu = self.fc_mu(result)
+        log_var = self.fc_var(result)
+
+        return [mu, log_var]
+
+    def decode(self, z: Tensor) -> Tensor:
+        result = self.decoder_input(z)
+        result = result.view(-1, 512, 2, 2)
+        result = self.decoder(result)
+        result = self.final_layer(result)
+        return result
+
+    def forward(self, input: Tensor, **kwargs) -> Tensor:
+        mu, log_var = self.encode(input)
+        z = self.reparameterize(mu, log_var)
+        return [self.decode(z), input, mu, log_var]
+
+    def reparameterize(self, mean, log_var):
+        epsilon = torch.normal(0, 1, size=mean.size()).to(device)
+        std = torch.exp(log_var) ** 0.5
+        z = mean + std * epsilon
+        return z
+
+    def loss_function(self,
+                      *args,
+                      **kwargs) -> dict:
+        self.num_iter += 1
+        recons = args[0]
+        input = args[1]
+        mu = args[2]
+        log_var = args[3]
+        kld_weight = kwargs['M_N']  # Account for the minibatch samples from the dataset
+
+        recons_loss = functional.mse_loss(recons, input)
+
+        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim = 1), dim = 0)
+
+        if self.loss_type == 'H': # https://openreview.net/forum?id=Sy2fzU9gl
+            loss = recons_loss + self.beta * kld_weight * kld_loss
+        elif self.loss_type == 'B': # https://arxiv.org/pdf/1804.03599.pdf
+            self.C_max = self.C_max.to(input.device)
+            C = torch.clamp(self.C_max/self.C_stop_iter * self.num_iter, 0, self.C_max.data[0])
+            loss = recons_loss + self.gamma * kld_weight* (kld_loss - C).abs()
+        else:
+            raise ValueError('Undefined loss type.')
+
+        return {'loss': loss, 'Reconstruction_Loss':recons_loss, 'KLD':kld_loss}
+
+    def sample(self,
+               num_samples:int,
+               current_device: int, **kwargs) -> Tensor:
+        """
+        Samples from the latent space and return the corresponding
+        image space map.
+        :param num_samples: (Int) Number of samples
+        :param current_device: (Int) Device to run the model
+        :return: (Tensor)
+        """
+        z = torch.randn(num_samples,
+                        self.latent_dim)
+
+        z = z.to(current_device)
+
+        samples = self.decode(z)
+        return samples
+
+    def generate(self, x: Tensor, **kwargs) -> Tensor:
+        """
+        Given an input image x, returns the reconstructed image
+        :param x: (Tensor) [B x C x H x W]
+        :return: (Tensor) [B x C x H x W]
+        """
+
+        return self.forward(x)[0]
 
 
 class Swish(Module):

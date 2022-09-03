@@ -44,9 +44,9 @@ class VAE(Module):
             )
             in_channels = h_dim
 
-        self.encoder = Sequential(*modules)
+        self.encoder = Sequential(*modules)  # 将modules列表中的值拆开独立作为形参
         # todo:if hidden dims' multi 4 is necessary
-        self.mu = Linear(hidden_dims[-1]*4, latent_dim)
+        self.mu = Linear(hidden_dims[-1]*4, latent_dim)  # 输入：hidden_dims最后一行数据*4 输出：隐变量维度
         self.var = Linear(hidden_dims[-1]*4, latent_dim)
 
         # decoder
@@ -60,6 +60,7 @@ class VAE(Module):
         for i in range(len(hidden_dims) - 1):
             modules.append(
                 Sequential(
+                    # 逆卷积构造器
                     ConvTranspose2d(hidden_dims[i],
                                     hidden_dims[i+1],
                                     kernel_size=3,
@@ -91,8 +92,7 @@ class VAE(Module):
 
     def encode(self, input: Tensor) -> List[Tensor]:
         """
-        Encodes the input by passing through the encoder network
-        and returns the latent codes.
+        将输入通过encode模块，返回一个encode过后的编码
         :param input: (Tensor) Input tensor to encoder [N x C x H x W]
         :return: (Tensor) List of latent codes
         """
@@ -101,12 +101,17 @@ class VAE(Module):
 
         # Split the result into mu and var components
         # of the latent Gaussian distribution
-        mu = self.fc_mu(result)
-        log_var = self.fc_var(result)
+        mu = self.mu(result)
+        log_var = self.var(result)
 
         return [mu, log_var]
 
     def decode(self, z: Tensor) -> Tensor:
+        """
+        将输入通过decode层进行解码，返回一个解码之后的结果
+        :param z:
+        :return:
+        """
         result = self.decoder_input(z)
         result = result.view(-1, 512, 2, 2)
         result = self.decoder(result)
@@ -114,11 +119,20 @@ class VAE(Module):
         return result
 
     def forward(self, input: Tensor, **kwargs) -> Tensor:
+        """
+        前向传播，将编码后的μ和σ值在reparameterize函数中进行混合
+        返回一个经过解码后的z值、输入值、μ和σ值
+        :param input: Tensor
+        :param kwargs:
+        :return:
+        """
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, mu, log_var]
 
-    def reparameterize(self, mean, log_var):
+    # 与后面的参考项目有些不同，仿照之前参考项目所写
+    @staticmethod
+    def reparameterize(mean, log_var):
         epsilon = torch.normal(0, 1, size=mean.size()).to(device)
         std = torch.exp(log_var) ** 0.5
         z = mean + std * epsilon
@@ -136,7 +150,7 @@ class VAE(Module):
 
         recons_loss = functional.mse_loss(recons, input)
 
-        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim = 1), dim = 0)
+        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
 
         if self.loss_type == 'H': # https://openreview.net/forum?id=Sy2fzU9gl
             loss = recons_loss + self.beta * kld_weight * kld_loss
@@ -147,14 +161,14 @@ class VAE(Module):
         else:
             raise ValueError('Undefined loss type.')
 
-        return {'loss': loss, 'Reconstruction_Loss':recons_loss, 'KLD':kld_loss}
+        return {'loss': loss, 'Reconstruction_Loss': recons_loss, 'KLD': kld_loss}
 
     def sample(self,
                num_samples:int,
                current_device: int, **kwargs) -> Tensor:
         """
-        Samples from the latent space and return the corresponding
-        image space map.
+        来自隐藏空间的样本
+        返回对应的映射
         :param num_samples: (Int) Number of samples
         :param current_device: (Int) Device to run the model
         :return: (Tensor)
@@ -169,7 +183,7 @@ class VAE(Module):
 
     def generate(self, x: Tensor, **kwargs) -> Tensor:
         """
-        Given an input image x, returns the reconstructed image
+        将输入的向量前向传播生成重组的向量
         :param x: (Tensor) [B x C x H x W]
         :return: (Tensor) [B x C x H x W]
         """

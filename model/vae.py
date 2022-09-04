@@ -22,8 +22,8 @@ class VAE(Module):
         )
 
         # 构建隐变量
-        self.project_m = Linear(z_dim, z_dim)
-        self.project_lv = Linear(z_dim, z_dim)
+        self.mean = Linear(z_dim, z_dim)
+        self.log_var = Linear(z_dim, z_dim)
 
         # 构建decoder
         self.decoder = Sequential(
@@ -38,8 +38,8 @@ class VAE(Module):
     def forward(self, x):
         norm_x = self.norm(x)
         hidden_x = self.encoder(norm_x)
-        mean_x = self.project_m(hidden_x)
-        lv_x = self.project_lv(hidden_x)
+        mean_x = self.mean(hidden_x)
+        lv_x = self.log_var(hidden_x)
         z = self.reparameterize(mean_x, lv_x)
         x_hat = self.decoder(z)
         return x_hat, norm_x, mean_x, lv_x

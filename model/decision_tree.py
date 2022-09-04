@@ -32,3 +32,6 @@ class DecisionTree:
         # 打印验证集上:正确率val_acc 查准率val_precision 查全率(召回率)val_recall
         print(
             'val_acc: %f  val_precision: %f  val_recall: %f' % ((tp + tn) / length, precision(tp, fp), recall(tp, fn)))
+
+    def predict(self, x):
+        return self.dt.predict(x)

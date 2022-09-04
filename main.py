@@ -2,7 +2,7 @@ import torch
 import argparse
 
 from torchsummary import summary
-from model.vae import VAE
+from model.vae_plus import VAE
 
 
 # 调用时传入参数的设置

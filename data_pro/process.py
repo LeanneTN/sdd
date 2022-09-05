@@ -3,9 +3,9 @@
 import os.path
 import sys
 ROOT_DIR = os.path.abspath('')
-sys.path.append('D:/good_memory/大三上/实训/MyPro')
+sys.path.append('D:/课程资料/学习课程/大三上实训/OurProject/MyPro')
 sys.path.append(ROOT_DIR)
-from data_pro.dataplus import arff_to_csv, csv_merge, data_clean
+from data_pro.dataplus import arff_to_csv, csv_merge, data_clean, data_scale
 import glob
 import argparse
 
@@ -40,6 +40,9 @@ if __name__ == '__main__':
 
     elif args.process == 'data_clean':
         data_clean('../dataset/csv/%s/merge.csv' % csv_merge_path, '../dataset/csv/%s/clean.csv' % csv_clean_path, fill_num=0.0)
+
+    elif args.process == 'data_scale':
+        data_scale('../dataset/csv/%s/clean.csv' % csv_clean_path, '../dataset/csv/%s/scale.csv' % csv_clean_path)
 
     else:
         print('parameter error: --process ', args.process)

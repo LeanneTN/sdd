@@ -6,8 +6,53 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Attention(Module):
 
-    def __init__(self, input_dim: int, hidden_dim: int = 16):
+    def __init__(self, input_dim: int):
         super(Attention, self).__init__()
+        self.norm = BatchNorm1d(input_dim)
+        self.bottleNeck = bottle_neck(input_dim, 32, ratio=0.50, hidden_dim=8, dropout=0.5)
+        self.linear = Linear(32, 1)
+        self.sigmoid = Sigmoid()
+
+    def forward(self, x):
+        x = self.norm(x)
+        x = self.bottleNeck(x)
+        x = self.linear(x)
+        x = self.sigmoid(x)
+        return x
+
+
+def bottle_neck(input_dim: int, output_dim: int, ratio: float, hidden_dim: int = 16, dropout: float = 0.0):
+    return Sequential(
+        Linear(input_dim, output_dim),
+        BatchNorm1d(output_dim),
+        Swish(),
+        Bottleneck(output_dim, ratio=ratio),
+        AttentionSimple(output_dim, hidden_dim=hidden_dim),
+        Dropout(dropout)
+    )
+
+
+class Bottleneck(Module):
+
+    def __init__(self, input_dim: int, ratio: float):
+        super(Bottleneck, self).__init__()
+        hidden_dim = max(int(input_dim * ratio), 1)
+        self.linear = Linear(input_dim, hidden_dim)
+        self.linear_2 = Linear(hidden_dim, input_dim)
+        self.norm = BatchNorm1d(input_dim)
+
+    def forward(self, x):
+        bottleneck = self.linear(x)
+        bottleneck = self.linear_2(bottleneck)
+        res = bottleneck + x
+        res = self.norm(res)
+        return res
+
+
+class AttentionSimple(Module):
+
+    def __init__(self, input_dim: int, hidden_dim: int = 16):
+        super(AttentionSimple, self).__init__()
         self.hidden_dim = hidden_dim
 
         self.query_embed = Linear(input_dim, hidden_dim)

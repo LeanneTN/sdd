@@ -3,6 +3,7 @@ import argparse
 
 from torchsummary import summary
 from model.vae_plus import VAE
+from model.attention import Attention
 
 
 # 调用时传入参数的设置
@@ -21,4 +22,7 @@ if model_type == 'vae':
     # todo: 获取VAE传入值的参数
     # model = VAE()
     # summary(model=model.float(), (input_dim,))
+elif model_type == 'attention':
+    model = Attention()
+    
 

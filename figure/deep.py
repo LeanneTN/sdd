@@ -1,10 +1,12 @@
+#深度学习结果
+#画对比条形图（测试集上不同模型各指标对比）、折线图（验证集上不同模型各指标随训练轮数的变化）
+#我们之后应该要按照自己用到的算法调整
 import json
 from pylab import *
 import matplotlib
 import matplotlib.pyplot as plt
 
-#画对比条形图、折线图
-
+#学长的各模型的不同评价指标结果文件
 filename1 = '..\\log\\test.json'
 filename2 = '..\\log\\attention_full.json'
 filename3 = '..\\log\\attention_simple.json'
@@ -27,12 +29,14 @@ def readfile():
     data.append(f5)
     return data
 
+#折线图里用（绘制20个折点，共学习1000轮，所以每50个数绘一个点）
+#返回折点值数组
 def average(data):
     y = []
     sum1 = 0
     num = 0
     for i in data:
-
+        #循环第40~49次的数据平均数放入y数组，重新计数往下循环
         if 40 <= num <= 49:
             sum1 += i
         num += 1
@@ -42,26 +46,26 @@ def average(data):
             sum1 = 0
     return y
 
-
-
+#折线图（不同模型各指标随训练轮数的变化）
 def draw_val(data, type):
     plt.figure(figsize=(8, 6))
     matplotlib.rcParams['font.sans-serif'] = ['SimHei']  # 用黑体显示中文
     x = range(0, 20)
 
+    #y：四种模型的“type”指标的值处理后的折点值数组
     y1 = average(data[0]['val'][type])
     print(type,y1)
     y2 = average(data[1]['val'][type])
     y3 = average(data[2]['val'][type])
-    y4 = data[3]['val'][type]
+    y4 = data[3]['val'][type] #可能学长原来的这个文件数据就20个，无需处理
     print(type, y4)
 
     plt.plot(x, y1, marker='o', ms=5, label="AttentionFull")
     plt.plot(x, y2, marker='v', ms=5, label="AttentionSimple")
     plt.plot(x, y3, marker='s', ms=5, label="Baseline")
     plt.plot(x, y4, marker='x', ms=5, label="VAE")
-    plt.xticks(rotation=45)
-    plt.xlabel("Epoch(round)")
+    plt.xticks(rotation=45)  #rotation代表lable显示的旋转角度
+    plt.xlabel("Epoch(round)")  #x轴的label
 
     if type == 'acc':
         yl = 'Accuracy'
@@ -72,7 +76,7 @@ def draw_val(data, type):
     else:
         print("ZB吧？")
 
-    plt.ylabel("Validation "+yl)
+    plt.ylabel("Validation "+yl)  #y轴的label显示评价指标名称
 
     plt.legend(loc="center right", prop={'family': 'Times New Roman', 'size': 14})
     xmajorLocator = plt.MultipleLocator(5)  # 将x主刻度标签设置为20的倍数
@@ -94,9 +98,10 @@ def draw_val(data, type):
     ax.yaxis.grid(True, which='major', ls='--')  # y坐标轴的网格使用次刻度
     ax.yaxis.grid(True, which='minor', ls='--')  # y坐标轴的网格使用次刻度
 
-    plt.savefig("deep_val_"+type+".jpg")
+    plt.savefig("deep_val_"+type+".jpg")  #保存图片
     plt.show()
 
+#条形图（测试集上不同模型各指标对比）
 def draw_test(data, type):
     plt.figure(figsize=(8, 9))
     matplotlib.rcParams['font.sans-serif'] = ['SimHei']  # 用黑体显示中文
@@ -108,8 +113,8 @@ def draw_test(data, type):
     y4 = data[3]['test'][type]
 
     y = [y1, y2, y3, y4]
-    plt.bar(x, y, color=['#67a3cc', '#ff7f0e', '#2ca02c', '#db4344'])
-    for a, b in zip(x, y):
+    plt.bar(x, y, color=['#67a3cc', '#ff7f0e', '#2ca02c', '#db4344'])  #颜色可以适当改改
+    for a, b in zip(x, y):  #利用zip函数将两个列表(list)组成字典(dict)
         plt.text(a, b, '%.5f' % b, ha='center', va='center', fontsize=10)
     plt.xticks(rotation=45)
     plt.xlabel("Epoch(round)")
@@ -140,10 +145,12 @@ def draw_test(data, type):
     plt.show()
 
 
-data = readfile()
+data = readfile()  #data为四个json结果组成的对象数组
+#折线图（验证集上不同模型各指标随训练轮数的变化）
 draw_val(data, 'acc')
 draw_val(data, 'precision')
 draw_val(data, 'recall')
+#条形图（测试集上不同模型各指标对比）
 draw_test(data, 'acc')
 draw_test(data, 'precision')
 draw_test(data, 'recall')

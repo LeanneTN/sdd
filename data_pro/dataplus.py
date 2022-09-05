@@ -80,11 +80,11 @@ def data_devide(datapath, bath_size, val_rate, test_rate, shuffle: bool=True):
            DataLoader(test_dataset_positive, batch_size=batch_size), input_dim
 
 # 不加float=0.0会报错
-def data_pro_unbalance(datapath, bath_size, shuffle: bool = True, val_rate:float=0.0, test_rate:float=0.0):
+def data_pro_unbalance(datapath, batch_size, shuffle: bool = True, val_rate:float=0.0, test_rate:float=0.0):
     """
     解决数据不平衡问题
     :param datapath: 数据集文件路径
-    :param bath_size: 一批次的数据大小
+    :param batch_size: 一批次的数据大小
     :param shuffle: 是否打乱，默认True
     :param val_rate: 验证集比率
     :param test_rate: 测试集比率

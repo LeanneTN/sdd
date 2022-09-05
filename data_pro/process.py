@@ -3,7 +3,7 @@
 import os.path
 import sys
 ROOT_DIR = os.path.abspath('')
-sys.path.append('D:\\pythonlib\\MyPro')
+sys.path.append('D:/good_memory/大三上/实训/MyPro')
 sys.path.append(ROOT_DIR)
 from data_pro.dataplus import arff_to_csv, csv_merge, data_clean
 import glob
@@ -20,25 +20,31 @@ if __name__ == '__main__':
         arff_to_csv: arff转换为csv
         csv_merge: csv文件合并
     """
-    arff_sub_path = 'OriginalData'
+    arff_sub_path = 'CleanedData'
     csv_sub_path = 'original'
+    csv_merge_path = 'merge'
+    csv_clean_path = 'clean'
 
     if args.process == 'arff_to_csv':
         print("你进来了吗")
         # 遍历所有的arff文件
-        for file in glob.glob('../dataset/%s/*.arff' % arff_sub_path):
-            print("for")
-            print('../dataset/%s/*.arff' % arff_sub_path)
-            csv_path = file.replace('arff', 'csv').replace(arff_sub_path, 'csv/%s' % csv_sub_path)
+        for file in glob.glob('../dataset/%s/MDP/D1/*.arff' % arff_sub_path):
+            print("really")
+            csv_path = file.replace('arff', 'csv').replace('%s/MDP/D1'% arff_sub_path, 'csv/%s' % csv_sub_path)
+            print(csv_path)
             arff_to_csv(file, csv_path)
             print(file, ' finished')
 
     elif args.process == 'csv_merge':
-        csv_merge('../dataset/csv/%s/*.csv' % csv_sub_path, '../dataset/csv/%s/merge.csv' % csv_sub_path)
+        csv_merge('../dataset/csv/%s/*.csv' % csv_sub_path, '../dataset/csv/%s/merge.csv' % csv_merge_path)
 
     elif args.process == 'data_clean':
-        data_clean('../dataset/csv/%s/merge.csv' % csv_sub_path, '../dataset/csv/%s/clean.csv' % csv_sub_path, fill_na=0.0)
+        data_clean('../dataset/csv/%s/merge.csv' % csv_merge_path, '../dataset/csv/%s/clean.csv' % csv_clean_path, fill_num=0.0)
 
     else:
         print('parameter error: --process ', args.process)
         exit(1)
+
+    # cleaned_data_path='../dataset/csv/original/*.csv'
+    # merge_path='../dataset/csv/merge/merge.csv'
+    # csv_merge(cleaned_data_path,merge_path)

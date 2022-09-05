@@ -6,6 +6,7 @@ from scipy.io import arff
 import pandas as pd
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import TomekLinks
+from util.index import log
 import random
 #glob用于查找文件目录
 import glob
@@ -38,7 +39,7 @@ def arff_to_csv(arff_path, csv_path) -> None:
         # 不需要添加索引
         csv_data.to_csv(csv_path, index=False)
 
-def data_devide(datapath, bath_size, val_rate, test_rate, shuffle: bool=True):
+def data_devide(datapath, batch_size, val_rate, test_rate, shuffle: bool=True):
     df = pd.read_csv(datapath)
     input_dim = len(df.columns) - 1
     # 0为无缺陷样本，为负样本
@@ -100,15 +101,11 @@ def data_pro_unbalance(datapath, batch_size, shuffle: bool = True, val_rate:floa
     dataset_x = dataframe
     dataset_x = np.array(dataset_x)
     # 过采样
-    if over_sampling == 'smote':
-        log('using smote to over sample')
-        # float is only available for binary classification. An error is raised for multi-class classification.
-        # data_x作为数据，data_y作为标签
-        dataset_x, dataset_y = SMOTE(sampling_strategy='float',random_state=random.randint(0, 100)).fit_resample(dataset_x, dataset_y)
-    # 欠采样
-    if under_sampling == 'tl':
-        log('using tomek links to under sample')
-        dataset_x, dataset_y = TomekLinks().fit_resample(dataset_x, dataset_y)
+    log('using smote to over sample')
+    # float is only available for binary classification. An error is raised for multi-class classification.
+    # data_x作为数据，data_y作为标签
+    dataset_x, dataset_y = SMOTE(sampling_strategy='float',random_state=random.randint(0, 100)).fit_resample(dataset_x, dataset_y)
+
     # tensorDataset是对于给定的tensor数据（样本和标签），将他们包装成dataset，如果是numpy的array，或者pandas的dataframe需要先转化成tensor
     dataset = TensorDataset(torch.tensor(dataset_x), torch.tensor(dataset_y.reshape(-1, 1)))
     # 数据切割

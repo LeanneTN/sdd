@@ -1,3 +1,5 @@
+#测试集上不同机器学习模型各指标对比
+#数值还要手动改
 import json
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -5,30 +7,32 @@ import pandas as pd
 
 labels = [
     'name',
-    'val_acc',
-    'val_precision',
-    'val_recall',
-    'val_f1'
+    'val_acc',          #正确率
+    'val_precision',    #查准率
+    'val_recall',       #查全率(召回率)
+    'val_f1'            #查全率和查准率的调和平均数
     ]
 
-def readJSON(path):
-    file = open(path,"rb")
-    fileJson = json.load(file)
-    test = fileJson["test"]
-    return test
+#从json文件中读取“test”。暂时没用到
+# def readJSON(path):
+#     file = open(path,"rb")
+#     fileJson = json.load(file)
+#     test = fileJson["test"]
+#     return test
 
 def frame(data):
     dic = {}
     for label in labels:
         datas = []
-        for j in range(5):
+        for j in range(5): #循环5次
             data_detail = data[j][label]
             datas.append(data_detail)
-        xx = {label:datas}
+        xx = {label:datas}  #指标名：五个模型值
         dic.update(xx)
     print(dic)
     return pd.DataFrame(dic)
 
+#给每个模型的结果里加f1指标
 def get_f1(data):
     for data_i in data:
         val_f1 = (2*data_i['val_precision']*data_i['val_recall'])/(data_i['val_precision']+data_i['val_recall'])
@@ -36,7 +40,7 @@ def get_f1(data):
         data_i.update(xx)
     return data
 
-#数值是直接给的
+#指标的数值是直接给的，估计要先在其他模块运行计算了，再填过来
 if __name__ == '__main__':
     XGBoost={
     'name':'XGBoost',
@@ -76,7 +80,7 @@ if __name__ == '__main__':
     data = [XGBoost,RF,DT,SVM,AdaBoost]
     data = get_f1(data)
     frame = frame(data)
-    for label in labels:
+    for label in labels:  #循环，对每个指标都画张模型对比图
         if label is not 'name':
             ax = sns.barplot(x='name',y=label,data=frame)
             plt.show()

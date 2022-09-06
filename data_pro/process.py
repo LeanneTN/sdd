@@ -19,8 +19,10 @@ if __name__ == '__main__':
     Args: --process
         arff_to_csv: arff转换为csv
         csv_merge: csv文件合并
+        data_clean: 清洗数据
+        data_scale: 数据缩放处理
     """
-    arff_sub_path = 'CleanedData'
+    arff_sub_path = 'OriginalData'
     csv_sub_path = 'original'
     csv_merge_path = 'merge'
     csv_clean_path = 'clean'
@@ -28,9 +30,9 @@ if __name__ == '__main__':
     if args.process == 'arff_to_csv':
         print("你进来了吗")
         # 遍历所有的arff文件
-        for file in glob.glob('../dataset/%s/MDP/D1/*.arff' % arff_sub_path):
+        for file in glob.glob('../dataset/%s/MDP/*.arff' % arff_sub_path):
             print("really")
-            csv_path = file.replace('arff', 'csv').replace('%s/MDP/D1'% arff_sub_path, 'csv/%s' % csv_sub_path)
+            csv_path = file.replace('arff', 'csv').replace('%s/MDP'% arff_sub_path, 'csv/%s' % csv_sub_path)
             print(csv_path)
             arff_to_csv(file, csv_path)
             print(file, ' finished')

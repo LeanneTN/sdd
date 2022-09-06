@@ -84,8 +84,5 @@ if __name__ == '__main__':
     for label in labels:  #循环，对每个指标都画张模型对比图
         if label != 'name':
             ax = sns.barplot(x='name',y=label,data=frame)
+            plt.savefig("img/draw_" + label + ".jpg")
             plt.show()
-
-
-
-

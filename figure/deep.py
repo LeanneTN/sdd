@@ -98,7 +98,7 @@ def draw_val(data, type):
     ax.yaxis.grid(True, which='major', ls='--')  # y坐标轴的网格使用次刻度
     ax.yaxis.grid(True, which='minor', ls='--')  # y坐标轴的网格使用次刻度
 
-    plt.savefig("deep_val_"+type+".jpg")  #保存图片
+    plt.savefig("img/deep_val_"+type+".jpg")  #保存图片
     plt.show()
 
 #条形图（测试集上不同模型各指标对比）
@@ -141,7 +141,7 @@ def draw_test(data, type):
     # 显示次刻度标签的位置,没有标签文本
     ax.yaxis.set_minor_locator(yminorLocator)
 
-    plt.savefig("deep_test_" + type + ".jpg")
+    plt.savefig("img/deep_test_" + type + ".jpg")
     plt.show()
 
 

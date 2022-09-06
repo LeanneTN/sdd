@@ -3,9 +3,9 @@
 import os.path
 import sys
 ROOT_DIR = os.path.abspath('')
-sys.path.append('D:/good_memory/大三上/实训/MyPro')
+sys.path.append('D:/课程资料/学习课程/大三上实训/OurProject/MyPro')
 sys.path.append(ROOT_DIR)
-from data_pro.dataplus import arff_to_csv, csv_merge, data_clean
+from data_pro.dataplus import arff_to_csv, csv_merge, data_clean, data_scale
 import glob
 import argparse
 
@@ -19,8 +19,10 @@ if __name__ == '__main__':
     Args: --process
         arff_to_csv: arff转换为csv
         csv_merge: csv文件合并
+        data_clean: 清洗数据
+        data_scale: 数据缩放处理
     """
-    arff_sub_path = 'CleanedData'
+    arff_sub_path = 'OriginalData'
     csv_sub_path = 'original'
     csv_merge_path = 'merge'
     csv_clean_path = 'clean'
@@ -28,9 +30,9 @@ if __name__ == '__main__':
     if args.process == 'arff_to_csv':
         print("你进来了吗")
         # 遍历所有的arff文件
-        for file in glob.glob('../dataset/%s/MDP/D1/*.arff' % arff_sub_path):
+        for file in glob.glob('../dataset/%s/MDP/*.arff' % arff_sub_path):
             print("really")
-            csv_path = file.replace('arff', 'csv').replace('%s/MDP/D1'% arff_sub_path, 'csv/%s' % csv_sub_path)
+            csv_path = file.replace('arff', 'csv').replace('%s/MDP'% arff_sub_path, 'csv/%s' % csv_sub_path)
             print(csv_path)
             arff_to_csv(file, csv_path)
             print(file, ' finished')
@@ -40,6 +42,9 @@ if __name__ == '__main__':
 
     elif args.process == 'data_clean':
         data_clean('../dataset/csv/%s/merge.csv' % csv_merge_path, '../dataset/csv/%s/clean.csv' % csv_clean_path, fill_num=0.0)
+
+    elif args.process == 'data_scale':
+        data_scale('../dataset/csv/%s/clean.csv' % csv_clean_path, '../dataset/csv/%s/scale.csv' % csv_clean_path)
 
     else:
         print('parameter error: --process ', args.process)

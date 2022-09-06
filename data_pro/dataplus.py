@@ -161,4 +161,29 @@ def data_clean(csv_path, clean_path, fill_num)->None:
     data = data.dropna(thresh=32)
     # 用fill_num来填充
     data.fillna(value=fill_num, inplace=True)
+
     data.to_csv(clean_path, index=False)
+
+def data_scale(clean_path, scale_path)->None:
+    """
+        对于清洗后的数据进行等比例缩放至0-1
+        :param csv_path:缩放之前的路径
+        :param clean_path:缩放后保留的路径
+        :return:None
+        """
+    data = pd.read_csv(clean_path, low_memory=False, dtype='float')
+    for i in data.columns:
+        print(i)
+        x_max = data[i].max()
+        print(x_max)
+        x_min = data[i].min()
+        print(x_min)
+        if x_max > 0.0:
+            # 对i列数据的每一行按比例缩放
+            for j in range(len(data)):
+                print(j)
+                print(data.loc[j, i])
+                data.loc[j, i] = data.loc[j, i] / x_max
+                print(data.loc[j, i])
+
+    data.to_csv(scale_path, index=False)

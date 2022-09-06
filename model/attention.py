@@ -90,7 +90,7 @@ class Swish(Module):
         return x
 
 
-def norm_and_activation(dim: int, activation: str = 'swish'):
+def norm_and_activation(dim: int, activation: str = 'sigmoid'):
     norm = BatchNorm1d(dim)
     if activation == 'swish':
         activation = Swish()

@@ -1,5 +1,5 @@
 import torch
-from torch.nn import Module, Sequential, Linear, BatchNorm1d
+from torch.nn import Module, Sequential, Linear, BatchNorm1d, MSELoss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -70,3 +70,21 @@ class Swish(Module):
     def forward(self, x):
         x = x * torch.sigmoid(self.beta * x)
         return x
+
+class VAELoss(Module):
+
+    def __init__(self, rate: float = 0.5):
+        super(VAELoss, self).__init__()
+        self.rate = rate
+        self.mse = MSELoss()
+        self.mse_ = MSELoss(reduction='none')
+
+    def forward(self, x_hat, norm_x, mean, log_var, reduction: bool = True):
+        kld = mean ** 2 + torch.exp(log_var) - log_var - 1
+        if reduction:
+            mse = self.mse(x_hat, norm_x)
+            kld = kld.mean()
+        else:
+            mse = self.mse_(x_hat, norm_x).mean(dim=-1)
+            kld = kld.mean(dim=-1)
+        return mse + self.rate * kld

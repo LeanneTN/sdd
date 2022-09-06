@@ -42,46 +42,47 @@ def get_f1(data):
 
 #指标的数值是直接给的，估计要先在其他模块运行计算了，再填过来
 if __name__ == '__main__':
-    XGBoost={
-    'name':'XGBoost',
-    'val_acc': 0.983984,
-    'val_precision': 0.987844,
-    'val_recall': 0.979116
+
+    AdaBoost = {
+        'name': 'AdaBoost',
+        'val_acc': 0.9175,
+        'val_precision': 0.8996,
+        'val_recall': 0.9393
     }
 
-    RF={
-    'name':'RandomForest',
-    'val_acc': 0.939844,
-    'val_precision': 0.917871,
-    'val_recall': 0.963288
+    DT = {
+        'name': 'DecisionTree',
+        'val_acc': 0.9896,
+        'val_precision': 0.9891,
+        'val_recall': 0.9900
     }
 
-    DT={
-    'name':'DecisionTree',
-    'val_acc': 0.974219,
-    'val_precision': 0.976819,
-    'val_recall': 0.970612
+    XGBoost = {
+        'name': 'XGBoost',
+        'val_acc': 0.9898,
+        'val_precision': 0.9938,
+        'val_recall': 0.9859
     }
 
-    SVM={
-    'name':'SVM',
-    'val_acc': 0.83955604,
-    'val_precision': 0.883672712,
-    'val_recall': 0.89912412
+    RF = {
+        'name': 'RandomForest',
+        'val_acc': 0.9237,
+        'val_precision': 0.8920,
+        'val_recall': 0.9633
     }
 
-    AdaBoost={
-    'name':'AdaBoost',
-    'val_acc': 0.938672,
-    'val_precision': 0.923981,
-    'val_recall': 0.951574
+    SVM = {
+        'name': 'SVM',
+        'val_acc': 0.88895,
+        'val_precision': 0.8603,
+        'val_recall': 0.926684
     }
 
-    data = [XGBoost,RF,DT,SVM,AdaBoost]
+    data = [AdaBoost, DT, XGBoost, RF, SVM]
     data = get_f1(data)
     frame = frame(data)
     for label in labels:  #循环，对每个指标都画张模型对比图
-        if label is not 'name':
+        if label != 'name':
             ax = sns.barplot(x='name',y=label,data=frame)
             plt.show()
 

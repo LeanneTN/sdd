@@ -28,9 +28,5 @@ class SVM:
                 else:
                     fn += 1
 
-        val_precision = precision(tp, fp)
-        val_recall = recall(tp, fn)
-        val_acc = f_measure(val_precision, val_recall)
-
         print(
-            'val_acc: %f  val_precision: %f  val_recall: %f' % (val_acc, val_precision, val_recall))
+            'val_acc: %f  val_precision: %f  val_recall: %f' % ((tp + tn) / length, precision(tp, fp), recall(tp, fn)))

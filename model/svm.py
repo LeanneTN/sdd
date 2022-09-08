@@ -12,8 +12,8 @@ class SVM:
     def test(self, x, y):
         y_pred = self.my_svm.predict(x)
         length = len(y)
-        tp = 0
-        fp = 0
+        tp = 0 # 实际正确也正确
+        fp = 0 # 实际
         tn = 0
         fn = 0
         for i in range(length):

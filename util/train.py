@@ -238,7 +238,7 @@ def get_optimizer(optimizer: str):
         log("optimizer '%s' cannot found" % optimizer)
         exit(1)
 
-
+# 计算正确度
 def compute_correct(y_pred, y_true, separate=False):
     length = len(y_pred)
     if separate is False:
@@ -284,6 +284,7 @@ def validate_classification(model, dataset, loss_function):
     return y_pred, y_true, loss / total_step
 
 
+# 这样写的话是既有正样本又有负样本
 def validate_ae(model, dataset, loss_function):
     # 调用fit_ae的时候传入的参数是一个数组，0取的是negative，1取的是positive
     negative_step = len(dataset[0])
@@ -299,12 +300,12 @@ def validate_ae(model, dataset, loss_function):
             # 更新loss_function
             loss_negative += loss_function(x_hat, norm_x, mean_x, lv_x)
             loss_n += loss_function(x_hat, norm_x, mean_x, lv_x, False).tolist()
-
+        # 比较自编码器还原相似度损失，损失越小越可能是正样本
         for _, (x, _) in enumerate(dataset[1]):
             x_hat, norm_x, mean_x, lv_x = model(x.to(device))
             loss_positive += loss_function(x_hat, norm_x, mean_x, lv_x)
             loss_p += loss_function(x_hat, norm_x, mean_x, lv_x, False).tolist()
-    negative_size = len(loss_n)
+    negative_size = len(loss_n) #这个为什么不能直接从数据中走呢
     # print(negative_size)
     positive_size = len(loss_p)
     # print(positive_size)
@@ -316,7 +317,7 @@ def validate_ae(model, dataset, loss_function):
     n_index = 0
     p_index = 0
     for _ in range(abnormal_size):
-        if loss_p[p_index] >= loss_n[n_index]:
+        if loss_p[p_index] >= loss_n[n_index]:#p是正样本的数量，n是负样本的数量
             tp += 1
             p_index += 1
         else:
@@ -333,7 +334,7 @@ def precision(true_positive, false_positive):
     else:
         return true_positive / (true_positive + false_positive)
 
-
+#召回率
 def recall(true_positive, false_negative):
     if true_positive + false_negative == 0:
         return 0.0

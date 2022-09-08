@@ -1,4 +1,4 @@
-#查准率
+#查准率 精确率
 def precision(true_positive, false_positive):
     if true_positive + false_positive == 0:
         return 0.0

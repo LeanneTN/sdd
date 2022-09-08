@@ -12,6 +12,7 @@ filename2 = '..\\log\\attention_simple_relu.json'
 filename3 = '..\\log\\attention_simple_sigmoid.json'
 filename4 = '..\\log\\baseline.json'
 filename5 = '..\\log\\vae.json'
+filename6 = '..\\log\\attention_simple_swish.json'
 
 def readfile():
     data = []
@@ -27,6 +28,9 @@ def readfile():
     with open(filename5) as f5:
         f5 = json.load(f5)
     data.append(f5)
+    with open(filename6) as f6:
+        f6 = json.load(f6)
+    data.append(f6)
     return data
 
 #折线图里用（绘制20个折点，共学习1000轮，所以每50个数绘一个点）
@@ -46,6 +50,22 @@ def average(data):
             sum1 = 0
     return y
 
+#800epoch（20*40）
+def average800(data):
+    y = []
+    sum1 = 0
+    num = 0
+    for i in data:
+        if 30 <= num <= 39:
+            sum1 += i
+        num += 1
+        if num == 40:
+            y.append(sum1/10)
+            num = 0
+            sum1 = 0
+    return y
+
+
 #折线图（不同模型各指标随训练轮数的变化）
 def draw_val(data, type):
     plt.figure(figsize=(8, 6))
@@ -59,11 +79,13 @@ def draw_val(data, type):
     y3 = average(data[2]['val'][type])
     y4 = data[3]['val'][type] #这个就训练20代，无需处理
     print(type, y4)
+    y5 = average800(data[4]['val'][type])
 
     plt.plot(x, y1, marker='o', ms=5, label="AttentionSimpleRelu")
     plt.plot(x, y2, marker='v', ms=5, label="AttentionSimpleSigmoid")
     plt.plot(x, y3, marker='s', ms=5, label="Baseline")
     plt.plot(x, y4, marker='x', ms=5, label="VAE")
+    plt.plot(x, y5, marker='*', ms=5, label="AttentionSimpleSwish")
     plt.xticks(rotation=45)  #rotation代表lable显示的旋转角度
     plt.xlabel("Epoch(round)")  #x轴的label
 

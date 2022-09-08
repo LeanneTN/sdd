@@ -6,10 +6,10 @@ from pylab import *
 import matplotlib
 import matplotlib.pyplot as plt
 
-#学长的各模型的不同评价指标结果文件
-filename1 = '..\\log\\test.json'
-filename2 = '..\\log\\attention_full.json'
-filename3 = '..\\log\\attention_simple.json'
+#各模型的不同评价指标结果文件
+# filename1 = '..\\log\\test.json'
+filename2 = '..\\log\\attention_simple_relu.json'
+filename3 = '..\\log\\attention_simple_sigmoid.json'
 filename4 = '..\\log\\baseline.json'
 filename5 = '..\\log\\vae.json'
 
@@ -57,11 +57,11 @@ def draw_val(data, type):
     print(type,y1)
     y2 = average(data[1]['val'][type])
     y3 = average(data[2]['val'][type])
-    y4 = data[3]['val'][type] #可能学长原来的这个文件数据就20个，无需处理
+    y4 = data[3]['val'][type] #这个就训练20代，无需处理
     print(type, y4)
 
-    plt.plot(x, y1, marker='o', ms=5, label="AttentionFull")
-    plt.plot(x, y2, marker='v', ms=5, label="AttentionSimple")
+    plt.plot(x, y1, marker='o', ms=5, label="AttentionSimpleRelu")
+    plt.plot(x, y2, marker='v', ms=5, label="AttentionSimpleSigmoid")
     plt.plot(x, y3, marker='s', ms=5, label="Baseline")
     plt.plot(x, y4, marker='x', ms=5, label="VAE")
     plt.xticks(rotation=45)  #rotation代表lable显示的旋转角度
@@ -105,7 +105,7 @@ def draw_val(data, type):
 def draw_test(data, type):
     plt.figure(figsize=(8, 9))
     matplotlib.rcParams['font.sans-serif'] = ['SimHei']  # 用黑体显示中文
-    x = ["AttentionFull", "AttentionSimple", "Baseline", "VAE"]
+    x = ["AttentionSimpleRelu", "AttentionSimpleSigmoid", "Baseline", "VAE"]
 
     y1 = data[0]['test'][type]
     y2 = data[1]['test'][type]

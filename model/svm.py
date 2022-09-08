@@ -1,5 +1,5 @@
 from sklearn.svm import SVC
-from util.train import precision, recall, f_measure
+from util.train import precision, recall
 
 class SVM:
 

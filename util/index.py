@@ -39,8 +39,8 @@ def to_json(json_path: str, val: dict = None, test: dict = None):
             dict_add(json_['test'], 'acc', test['acc'], replace=True)
         if 'precision' in test:
             dict_add(json_['test'], 'precision', test['precision'], replace=True)
-        if 'recall' in test:
-            dict_add(json_['test'], 'recall', test['recall'], replace=True)
+        # if 'recall' in test:
+        #     dict_add(json_['test'], 'recall', test['recall'], replace=True)
         if 'precision' in test and 'recall' in test:
             dict_add(json_['test'], 'f1', 2 * test['precision'] * test['recall'] / (test['precision'] + test['recall']), replace=True)
 

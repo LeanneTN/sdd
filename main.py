@@ -1,8 +1,13 @@
+import os.path
+import sys
+ROOT_DIR = os.path.abspath('')
+sys.path.append('D:\good_memory\大三上\实训\MyPro')
+sys.path.append(ROOT_DIR)
 import torch
 from util.data_processor import get_classification_dataset, get_ae_dataset
 from util.train import fit_classification, fit_ae
 from util.index import log
-from model.baseline import DL
+# from model.baseline import DL
 from model.attention import Attention
 from model.vae import VAE
 from model.Myvae import BetaVAE
@@ -21,7 +26,7 @@ args = parser.parse_args()
 if torch.cuda.is_available():
     log("cuda available, using gpu to train and predict")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-dataset_path = 'dataset/csv/original/scale.csv'
+dataset_path = 'dataset/csv/clean/scale.csv'
 
 model_type = args.model
 if model_type == 'dl' or model_type == 'attention':
@@ -31,7 +36,7 @@ if model_type == 'dl' or model_type == 'attention':
         log_path = './log/baseline.json'
         save_path = './model/saved_model/baseline.pt'
     elif model_type == 'attention':
-        model = Attention(input_dim, aft=args.aft).to(device)
+        model = Attention(input_dim).to(device)
         log_path = './log/attention_%s.json' % args.aft
         save_path = './model/saved_model/attention_%s.pt' % args.aft
     else:
@@ -73,7 +78,7 @@ elif model_type == 'vae':
                  # **kwargs) -> None:
     # 后期可以设置成一个超参数然后调节 latent_dim可调节，没有必要是40
     latent_dim = 80
-    model = BetaVAE(40,latent_dim).to(device)
+    model = BetaVAE(40,latent_dim,0.001).to(device)
     # model = VAE(input_dim, abnormal_r0ate=0.1458938).to(device)
 
     # summary(model.float(), (input_dim,))

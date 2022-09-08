@@ -1,3 +1,8 @@
+import os.path
+import sys
+ROOT_DIR = os.path.abspath('')
+sys.path.append('D:\good_memory\大三上\实训\MyPro')
+sys.path.append(ROOT_DIR)
 from model.adaboost import AdaBoost
 import pandas as pd
 import numpy as np

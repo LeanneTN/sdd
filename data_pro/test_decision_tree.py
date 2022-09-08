@@ -1,3 +1,8 @@
+import os.path
+import sys
+ROOT_DIR = os.path.abspath('')
+sys.path.append('D:\good_memory\大三上\实训\MyPro')
+sys.path.append(ROOT_DIR)
 from model.decision_tree import DecisionTree
 import pandas as pd
 import numpy as np
@@ -8,7 +13,7 @@ from imblearn.over_sampling import SMOTE
 
 model = DecisionTree()
 
-df = pd.read_csv('../dataset/csv/clean/scale.csv')
+df = pd.read_csv('../dataset/csv/clean/clean.csv')
 dataset_y = df.pop('label')
 dataset_y = np.array(dataset_y)
 dataset_x = df

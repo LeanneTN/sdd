@@ -173,7 +173,8 @@ def fit_ae(model: Module, train_dataset: DataLoader, epochs: int, optimizer: str
     model.eval()
     log('test dataset')
     loss_negative, loss_positive, test_acc, test_precision, test_recall = validate_ae(model, test_dataset, loss_function)
-    print('test_loss_negative: %f, test_loss_positive: %f, test_acc: %f, test_precision: %f, test_recall: %f' % (loss_negative, loss_positive, test_acc, test_precision, test_recall))
+    #print('test_loss_negative: %f, test_loss_positive: %f, test_acc: %f, test_precision: %f, test_recall: %f' % (loss_negative, loss_positive, test_acc, test_precision, test_recall))
+    print('test_loss_negative: %f, test_loss_positive: %f, test_acc: %f, test_precision: %f' % (loss_negative, loss_positive, test_acc, test_precision))
     if log_path is not None:
         to_json(log_path, test={
             'acc': test_acc,
@@ -193,8 +194,8 @@ def visualize_ae(step: int, total_step: int, train_loss: float, val_loss_negativ
         info += 'val_acc: %f  ' % val_acc
     if val_precision is not None:
         info += 'val_precision: %f  ' % val_precision
-    if val_recall is not None:
-        info += 'val_recall: %f  ' % val_recall
+    # if val_recall is not None:
+    #     info += 'val_recall: %f  ' % val_recall
     print('\r%s' % info, end='', flush=True)
 
 # 可视化每每一步

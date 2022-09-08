@@ -13,6 +13,7 @@ class BetaVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
+                 abnormal_rate: float,
                  hidden_dims: List = None,
                  beta: int = 4,
                  gamma: float = 1000.,
@@ -22,7 +23,9 @@ class BetaVAE(BaseVAE):
                  **kwargs) -> None:
         super(BetaVAE, self).__init__()
 
+        self.in_channels = in_channels
         self.latent_dim = latent_dim
+        self.abnormal_rate = abnormal_rate
         self.beta = beta
         self.gamma = gamma
         self.loss_type = loss_type
@@ -44,13 +47,13 @@ class BetaVAE(BaseVAE):
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
-
+        # 平均值
         self.fc_mu = nn.Linear(hidden_dims[-1] , latent_dim)
+        # 方差
         self.fc_var = nn.Linear(hidden_dims[-1], latent_dim)
         # print(modules)
         # Build Decoder
         modules = []
-
 
         self.decoder_input = nn.Linear(latent_dim, hidden_dims[-1] )
         # reverse和下面对应
@@ -72,6 +75,7 @@ class BetaVAE(BaseVAE):
 
         self.decoder = nn.Sequential(*modules)
 
+        # 最后一层的final_layer，其实可以写死
         self.final_layer = nn.Sequential(
             nn.ConvTranspose1d(hidden_dims_2[-1],
                                hidden_dims_2[-1],
@@ -97,6 +101,7 @@ class BetaVAE(BaseVAE):
         input = input.unsqueeze(-1)
         result = self.encoder(input)
         result = torch.flatten(result, start_dim=1)
+
 
         # Split the result into mu and var components
         # of the latent Gaussian distribution
@@ -135,6 +140,7 @@ class BetaVAE(BaseVAE):
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         # print(self.decode(z))
+        # input 原始数据  mu log_var decode返回最终作比较的数据
         return [self.decode(z), input, mu, log_var]
 
     def loss_function(self,

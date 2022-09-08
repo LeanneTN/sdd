@@ -135,7 +135,7 @@ def draw_test(data, type):
     y4 = data[3]['test'][type]
 
     y = [y1, y2, y3, y4]
-    plt.bar(x, y, color=['#67a3cc', '#ff7f0e', '#2ca02c', '#db4344'])  #颜色可以适当改改
+    plt.bar(x, y, color=['#d87989', '#fec965', '#93d69a', '#8cb5e9'])
     for a, b in zip(x, y):  #利用zip函数将两个列表(list)组成字典(dict)
         plt.text(a, b, '%.5f' % b, ha='center', va='center', fontsize=10)
     plt.xticks(rotation=45)
